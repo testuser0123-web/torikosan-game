@@ -1,29 +1,37 @@
 // app/page.tsx
 "use client";
 
+import PostItem from "@/components/PostItem";
 import { useState, useEffect, useRef } from "react";
 
-interface Post {
+export interface Post {
   id: string;
   content: string;
   created_at: string;
+  img: string | null;
 }
 
+const call = ["トリコさん！", "小松ゥ！", "マツ！", "小松くん！", "小僧ォ！"];
+
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [content, setContent] = useState<string>("");
+  const [selectedCall, setSelectedCall] = useState(call[0]);
   const [offset, setOffset] = useState<number>(-1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const observer = useRef<IntersectionObserver | null>(null);
 
+  const toggleAccordion = () => {
+    setIsOpen(!isOpen);
+  };
+
   // 投稿を取得する関数
   const fetchPosts = async (offset: number) => {
+    setIsLoading(true);
     try {
       const response = await fetch(`/api/getPosts?offset=${offset}&limit=5`);
       const data: Post[] = await response.json();
-
-      console.log(offset);
-      console.log(data);
 
       if (data.length > 0) {
         setPosts((prev) => [...prev, ...data]);
@@ -32,6 +40,8 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Failed to load posts:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,24 +67,26 @@ export default function Home() {
 
   // 投稿の追加処理
   const handlePost = async (e: React.FormEvent) => {
+    setIsLoading(true);
     e.preventDefault();
-    if (!content) return;
+    if (!selectedCall) return;
 
     try {
       await fetch("/api/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content: selectedCall }),
       });
-      setContent("");
-      setOffset(0);
       loadNewPosts();
     } catch (error) {
       console.error("Failed to post message:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const loadNewPosts = async () => {
+    setIsLoading(true);
     try {
       const id = posts[0]?.id || 0;
       const response = await fetch(`/api/getNewPosts?id=${id}`);
@@ -85,58 +97,83 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Failed to load posts:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleClick = () => {
     loadNewPosts();
   };
+
   return (
     <div style={{ padding: "20px" }}>
-      <h1>掲示板</h1>
+      <h1 style={{ marginBottom: "20px" }}>トリコさん・小松ゲーム</h1>
+
+      <div>
+        <div className="accordion" onClick={toggleAccordion}>
+          {isOpen ? "▼" : "►"} ルール
+        </div>
+
+        {isOpen && (
+          <div className="accordion-content">
+            <p>
+              まず、誰かが『トリコさん！』ってレスをする <br />{" "}
+              こいつはつまり小松役 <br /> <br />{" "}
+              そのレスの後に『小松ゥ！』『マツ！』『小松くん！』『小僧ォ！』のいずれかのレスをする{" "}
+              <br /> これはつまり、トリコ、サニー、ココ、ゼブラの役ってわけ{" "}
+              <br /> <br />{" "}
+              『トリコさん！』の後に特定の四天王の小松呼びレスが3レス連続で続いたら、その四天王の勝ち{" "}
+              <br /> <br /> 例 <br /> &gt;&gt; 3トリコさん！　&gt;&gt; 4マツ！
+              &gt;&gt; 5マツ！ &gt;&gt; 6マツ！ <br /> ↑これならサニーの勝ち{" "}
+              <br /> <br /> &gt;&gt; 3トリコさん！　&gt;&gt; 4マツ！ &gt;&gt;
+              5小松ゥ！ &gt;&gt; 6マツ！ &gt;&gt; 7マツ！ <br /> ↑この場合は無効{" "}
+              <br /> <br /> <br /> ただし、四天王の中でトリコだけは例外 <br />{" "}
+              トリコは元々有利やから、勝利条件を3レスではなく5レスにする、元々小松はトリコを呼んでいるわけだしな{" "}
+              <br />{" "}
+              これはトリコ以外の四天王に対する正当なハンディキャップというわけ{" "}
+              <br /> <br /> 小松は勝った四天王のコンビになる <br />{" "}
+              つまりこれは好きな四天王を勝たせる熱いゲームってわけ
+            </p>
+          </div>
+        )}
+      </div>
 
       <form onSubmit={handlePost}>
-        <textarea
-          rows={4}
-          cols={50}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="新しいポストを入力..."
-        />
-        <br />
-        <button type="submit">投稿</button>
+        <div className="selectbox-5">
+          <h3>
+            何と呼ぶか選べ！
+            <br />
+          </h3>
+          <select
+            id="callSelect"
+            value={selectedCall}
+            onChange={(e) => {
+              setSelectedCall(e.target.value);
+            }}
+          >
+            {call.map((option, index) => (
+              <option key={index} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button type="submit" disabled={isLoading}>
+          🍖投稿🍖
+        </button>
       </form>
 
       <div style={{ marginTop: "20px" }}>
-        <button
-          onClick={handleClick}
-          style={{
-            width: "100%",
-            marginBottom: "15px",
-            border: "none",
-            background: "pink",
-            display: "block",
-            fontSize: "1em",
-            padding: "5px",
-            borderRadius: "0.2em",
-            cursor: "pointer",
-          }}
-        >
-          更新する
-          <hr />
+        <button onClick={handleClick} disabled={isLoading}>
+          🔃更新🔃
         </button>
         {posts.map((post, index) => (
-          <div
+          <PostItem
             key={post.id}
+            post={post}
             ref={posts.length === index + 1 ? lastPostRef : null}
-            style={{ marginBottom: "15px" }}
-          >
-            <p>
-              {post.id}: {post.content}
-            </p>
-            <small>{new Date(post.created_at).toLocaleString()}</small>
-            <hr />
-          </div>
+          />
         ))}
       </div>
 

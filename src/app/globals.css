@@ -40,3 +40,63 @@ a {
     color-scheme: dark;
   }
 }
+
+.selectbox-5 {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  margin: 10px 0;
+}
+
+.selectbox-5::after {
+  position: absolute;
+  right: 15px;
+  width: 10px;
+  height: 7px;
+  background-color: #535353;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.selectbox-5 select {
+  appearance: none;
+  min-width: 230px;
+  height: 2.8em;
+  padding: 0.4em calc(0.8em + 30px) 0.4em 0.8em;
+  border: none;
+  border-bottom: 2px solid #d0d0d0;
+  background-color: #fff;
+  color: #333333;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.selectbox-5 select:focus {
+  outline: none;
+}
+
+button {
+  width: 100%;
+  margin-bottom: 15px;
+  background: var(--background);
+  border: 1px solid var(--foreground);
+  display: block;
+  font-size: 1em;
+  padding: 5px;
+  border-radius: 0.2em;
+  cursor: pointer;
+}
+
+.accordion {
+  padding: 10px;
+  background: var(--background);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.accordion-content {
+  padding: "10px";
+  background: "#e2e2e2";
+  margin-top: "5px";
+}

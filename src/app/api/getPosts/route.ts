@@ -13,7 +13,13 @@ export async function GET(req: NextRequest) {
     if (offset === -1) {
       const result = await client.query("SELECT COUNT(*) FROM posts");
       const rowCount = parseInt(result.rows[0].count, 10); // 行数を数値に変換
-      offset = rowCount - limit;
+      console.log("row", rowCount);
+      if (rowCount < 5) {
+        offset = 0;
+        limit = rowCount;
+      } else {
+        offset = rowCount - limit;
+      }
     } else if (offset <= 5) {
       limit = offset - 1;
       offset = 0;
