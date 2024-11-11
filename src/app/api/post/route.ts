@@ -49,10 +49,10 @@ export async function POST(req: NextRequest) {
     const currentTime = new Date();
     if (
       lastPostTime &&
-      currentTime.getTime() - new Date(lastPostTime).getTime() < 10000
+      currentTime.getTime() - new Date(lastPostTime).getTime() < 5000
     ) {
       return NextResponse.json(
-        { error: "10秒以内の連続投稿はできません。" },
+        { error: "5秒以内の連続投稿はできません。" },
         { status: 429 }
       );
     }

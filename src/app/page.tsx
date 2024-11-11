@@ -174,7 +174,7 @@ export default function Home() {
         body: JSON.stringify({ content: selectedCall, userId }),
       });
       if (response.status === 429) {
-        alert("10秒以内の呼び出しはできません");
+        alert("5秒以内の連投はできません");
       } else if (response.status === 500) {
         setServerError(true);
       } else if (response.status === 200) {
