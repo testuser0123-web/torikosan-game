@@ -38,5 +38,7 @@ export async function GET(req: NextRequest) {
       { error: "Failed to retrieve posts" },
       { status: 500 }
     );
+  } finally {
+    client.end();
   }
 }

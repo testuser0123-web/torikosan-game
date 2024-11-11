@@ -80,6 +80,13 @@ export default function Home() {
     fetchPosts(offset);
   }, [offset]);
 
+  // 拡大禁止
+  const touchHandler = (event: TouchEvent) => {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  };
+
   // user idを設定する
   useEffect(() => {
     const setID = async () => {
@@ -91,6 +98,10 @@ export default function Home() {
     };
 
     setID();
+    // 拡大禁止
+    document.addEventListener("touchstart", touchHandler, {
+      passive: false,
+    });
   }, []);
 
   // 最新の勝者を読み込む関数

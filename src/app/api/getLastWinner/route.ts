@@ -16,5 +16,7 @@ export async function GET() {
       { error: "Failed to retrieve winners" },
       { status: 500 }
     );
+  } finally {
+    client.end();
   }
 }

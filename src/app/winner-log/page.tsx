@@ -13,6 +13,13 @@ const WinnerLog = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [posts, setPosts] = useState<Winner[]>([]);
 
+  // 拡大禁止
+  const touchHandler = (event: TouchEvent) => {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  };
+
   async function getLog() {
     setIsLoading(true);
     const response = await fetch("/api/getWinnerCount");
@@ -20,11 +27,16 @@ const WinnerLog = () => {
     setCount(data);
     setIsLoading(false);
     const response2 = await fetch("/api/getWinners");
-    const data2 = await response2.json();
-    setPosts(data2);
+    if (response2.status === 200) {
+      const data2 = await response2.json();
+      setPosts(data2);
+    }
   }
   useEffect(() => {
     getLog();
+    document.addEventListener("touchstart", touchHandler, {
+      passive: false,
+    });
   }, []);
   const handleClick = () => {
     getLog();

@@ -27,5 +27,7 @@ export async function GET() {
       { error: "Error fetching winner's log" },
       { status: 500 }
     );
+  } finally {
+    client.end();
   }
 }
