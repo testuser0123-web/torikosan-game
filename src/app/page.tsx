@@ -19,10 +19,12 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [selectedCall, setSelectedCall] = useState(call[0]);
+  const [selectedCall, setSelectedCall] = useState(call[1]);
   const [offset, setOffset] = useState<number>(-1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [userId, setUserID] = useState("");
+  const [autoReload, setAutoReload] = useState(false);
+  const [serverError, setServerError] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
 
   const toggleAccordion = () => {
@@ -33,7 +35,13 @@ export default function Home() {
   const fetchPosts = async (offset: number) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/getPosts?offset=${offset}&limit=5`);
+      const response = await fetch(`/api/getPosts?offset=${offset}&limit=10`);
+      if (!response.ok) {
+        setServerError(true);
+        return;
+      } else {
+        setServerError(false);
+      }
       const data: Post[] = await response.json();
 
       if (data.length > 0) {
@@ -57,7 +65,7 @@ export default function Home() {
   // user idを設定する
   useEffect(() => {
     const setID = async () => {
-      const res = await fetch("/api/get-user-info");
+      const res = await fetch("/api/getUserInfo");
       const data = await res.json();
       const rawData = `${data.ip}-${data.ua}`;
       const hash = crypto.createHash("sha256").update(rawData).digest("hex");
@@ -66,6 +74,16 @@ export default function Home() {
 
     setID();
   }, []);
+
+  // 自動更新
+  useEffect(() => {
+    if (autoReload) {
+      const interval = setInterval(() => {
+        loadNewPosts();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [autoReload]);
 
   // インフィニティスクロール用のIntersection Observer
   const lastPostRef = (node: HTMLDivElement) => {
@@ -107,6 +125,11 @@ export default function Home() {
     try {
       const id = posts[0]?.id || 0;
       const response = await fetch(`/api/getNewPosts?id=${id}`);
+      if (!response.ok) {
+        setServerError(true);
+      } else {
+        setServerError(false);
+      }
       const data: Post[] = await response.json();
 
       if (data.length > 0) {
@@ -123,8 +146,23 @@ export default function Home() {
     loadNewPosts();
   };
 
+  const onScrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const changeAutoReload = () => {
+    setAutoReload((prev) => !prev);
+  };
+
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="container" style={{ padding: "20px" }}>
+      {serverError && <div className="toast">Server Error</div>}
+      <button className="fixed-btn" onClick={onScrollToTop}>
+        🔝トップに戻る
+      </button>
       <h1 style={{ marginBottom: "20px" }}>トリコさん・小松ゲーム</h1>
 
       <div>
@@ -136,7 +174,7 @@ export default function Home() {
           <div className="accordion-content">
             <p>
               まず、誰かが『トリコさん！』ってレスをする <br />{" "}
-              こいつはつまり小松役 <br /> <br />{" "}
+              こいつはつまり小松役や <br /> <br />{" "}
               そのレスの後に『小松ゥ！』『マツ！』『小松くん！』『小僧ォ！』のいずれかのレスをする{" "}
               <br /> これはつまり、トリコ、サニー、ココ、ゼブラの役ってわけや{" "}
               <br /> <br />{" "}
@@ -146,7 +184,7 @@ export default function Home() {
               <br /> <br /> &gt;&gt; 3トリコさん！　&gt;&gt; 4マツ！ &gt;&gt;
               5小松ゥ！ &gt;&gt; 6マツ！ &gt;&gt; 7マツ！ <br /> ↑この場合は無効{" "}
               <br /> <br /> <br /> ただし、四天王の中でトリコだけは例外 <br />{" "}
-              トリコは元々有利やから、勝利条件を3レスではなく5レスにする、元々小松はトリコを呼んでいるわけやだしな{" "}
+              トリコは元々有利やから、勝利条件を3レスではなく5レスにする、元々小松はトリコを呼んでいるわけやしな{" "}
               <br />{" "}
               これはトリコ以外の四天王に対する正当なハンディキャップというわけや{" "}
               <br /> <br /> 小松は勝った四天王のコンビになる <br />{" "}
@@ -181,7 +219,10 @@ export default function Home() {
         </button>
       </form>
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: "15px" }}>
+        <button onClick={changeAutoReload} disabled={isLoading}>
+          🔃自動更新を{autoReload ? "オフ" : "オン"}にする🔃
+        </button>
         <button onClick={handleClick} disabled={isLoading}>
           🔃更新🔃
         </button>

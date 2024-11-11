@@ -39,17 +39,19 @@ export async function POST(req: NextRequest) {
       [content, timestamp, img_path[content], userId]
     );
     const result = await client.query(
-      "SELECT * FROM posts ORDER BY id DESC LIMIT 5"
+      "SELECT * FROM posts ORDER BY id DESC LIMIT 6"
     );
-    if (result.rows.length >= 3) {
+    if (result.rows.length >= 4) {
       const contents = result.rows.map((row) => row.content);
       const allSame =
         contents[0] === "小松ゥ！"
-          ? contents.length === 5 &&
+          ? contents.length === 6 &&
+            contents[5] === "トリコさん！" &&
             contents.every(
               (content) => content === contents[0] && content !== "トリコさん！"
             )
-          : contents
+          : contents[3] === "トリコさん！" &&
+            contents
               .slice(0, 3)
               .every(
                 (content) =>

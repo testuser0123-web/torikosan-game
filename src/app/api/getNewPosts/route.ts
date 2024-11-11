@@ -1,6 +1,7 @@
 // app/api/getPosts/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getClient } from "../../../lib/db";
+import { QueryResult } from "@vercel/postgres";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -9,10 +10,17 @@ export async function GET(req: NextRequest) {
 
   try {
     await client.connect();
-    const result = await client.query(
-      "SELECT * FROM posts WHERE id > $1 ORDER BY id DESC",
-      [id]
-    );
+    let result: QueryResult;
+    if (id === 0) {
+      result = await client.query(
+        "SELECT * FROM posts ORDER BY id DESC LIMIT 10"
+      );
+    } else {
+      result = await client.query(
+        "SELECT * FROM posts WHERE id > $1 ORDER BY id DESC",
+        [id]
+      );
+    }
     return NextResponse.json(result.rows);
   } catch (error) {
     console.error("Failed to retrieve posts:", error);
