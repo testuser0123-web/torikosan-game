@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
     if (offset === -1) {
       const result = await client.query("SELECT COUNT(*) FROM posts");
       const rowCount = parseInt(result.rows[0].count, 10); // 行数を数値に変換
-      console.log("row", rowCount);
       if (rowCount < 5) {
         offset = 0;
         limit = rowCount;
@@ -27,7 +26,7 @@ export async function GET(req: NextRequest) {
       offset = offset - limit - 1;
     }
     if (offset < 0) offset = 0;
-    console.log(`limit=${limit}, offset=${offset}`);
+    // console.log(`limit=${limit}, offset=${offset}`);
     const result = await client.query(
       "SELECT * FROM posts LIMIT $1 OFFSET $2",
       [limit, offset]
