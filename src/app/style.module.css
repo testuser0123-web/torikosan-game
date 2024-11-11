@@ -1,0 +1,9 @@
+.anchor {
+  color: azure;
+  padding: 5px;
+  border-bottom: 1px solid white;
+}
+
+.anchor:visited {
+  color: azure;
+}

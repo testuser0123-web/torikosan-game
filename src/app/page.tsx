@@ -2,8 +2,11 @@
 "use client";
 
 import PostItem from "@/components/PostItem";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import crypto from "crypto";
+import Image from "next/image";
+import Link from "next/link";
+import classes from "./style.module.css";
 
 export interface Post {
   id: string;
@@ -11,6 +14,13 @@ export interface Post {
   created_at: string;
   img: string | null;
   user_id: string | null;
+}
+
+export interface Winner {
+  id: string;
+  content: string;
+  created_at: string;
+  img: string | null;
 }
 
 const call = ["トリコさん！", "小松ゥ！", "マツ！", "小松くん！", "小僧ォ！"];
@@ -25,6 +35,7 @@ export default function Home() {
   const [userId, setUserID] = useState("");
   const [autoReload, setAutoReload] = useState(false);
   const [serverError, setServerError] = useState(false);
+  const [lastWinner, setLastWinner] = useState<Winner | null>(null);
   const observer = useRef<IntersectionObserver | null>(null);
 
   const toggleAccordion = () => {
@@ -45,7 +56,14 @@ export default function Home() {
       const data: Post[] = await response.json();
 
       if (data.length > 0) {
-        setPosts((prev) => [...prev, ...data]);
+        const newPosts = [...posts];
+        data.forEach((post) => {
+          if (post.id < (posts[posts.length - 1]?.id || 1e6)) {
+            newPosts.push(post);
+          }
+        });
+        setPosts(newPosts);
+        // setPosts((prev) => [...prev, ...data]);
       } else {
         setHasMore(false);
       }
@@ -75,15 +93,58 @@ export default function Home() {
     setID();
   }, []);
 
+  // 最新の勝者を読み込む関数
+  const getLastWinner = async () => {
+    const res = await fetch("/api/getLastWinner");
+    const data = await res.json();
+    if (data.length === 1) {
+      setLastWinner(data[0]);
+    }
+  };
+
+  // ページ取得時に最新の勝者を取得
+  useEffect(() => {
+    getLastWinner();
+  }, []);
+
+  const loadNewPosts = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const id = posts[0]?.id || 0;
+      const response = await fetch(`/api/getNewPosts?id=${id}`);
+      if (!response.ok) {
+        setServerError(true);
+      } else {
+        setServerError(false);
+      }
+      const data: Post[] = await response.json();
+
+      if (data.length > 0) {
+        const newPosts = [...posts];
+        data.reverse().forEach((post) => {
+          if (post.id > (posts[0]?.id || 0)) {
+            newPosts.unshift(post);
+          }
+        });
+        setPosts(newPosts);
+      }
+    } catch (error) {
+      console.error("Failed to load posts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [posts]);
+
   // 自動更新
   useEffect(() => {
     if (autoReload) {
       const interval = setInterval(() => {
         loadNewPosts();
-      }, 5000);
+        getLastWinner();
+      }, 10000);
       return () => clearInterval(interval);
     }
-  }, [autoReload]);
+  }, [autoReload, loadNewPosts]);
 
   // インフィニティスクロール用のIntersection Observer
   const lastPostRef = (node: HTMLDivElement) => {
@@ -107,12 +168,20 @@ export default function Home() {
     if (!selectedCall) return;
 
     try {
-      await fetch("/api/post", {
+      const response = await fetch("/api/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: selectedCall, userId }),
       });
-      loadNewPosts();
+      if (response.status === 429) {
+        alert("10秒以内の呼び出しはできません");
+      } else if (response.status === 500) {
+        setServerError(true);
+      } else if (response.status === 200) {
+        setServerError(false);
+        loadNewPosts();
+        getLastWinner();
+      }
     } catch (error) {
       console.error("Failed to post message:", error);
     } finally {
@@ -120,30 +189,10 @@ export default function Home() {
     }
   };
 
-  const loadNewPosts = async () => {
-    setIsLoading(true);
-    try {
-      const id = posts[0]?.id || 0;
-      const response = await fetch(`/api/getNewPosts?id=${id}`);
-      if (!response.ok) {
-        setServerError(true);
-      } else {
-        setServerError(false);
-      }
-      const data: Post[] = await response.json();
-
-      if (data.length > 0) {
-        setPosts((prev) => [...data, ...prev]);
-      }
-    } catch (error) {
-      console.error("Failed to load posts:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // 更新ボタンを押したときの処理
   const handleClick = () => {
     loadNewPosts();
+    getLastWinner();
   };
 
   const onScrollToTop = () => {
@@ -161,8 +210,48 @@ export default function Home() {
     <div className="container" style={{ padding: "20px" }}>
       {serverError && <div className="toast">Server Error</div>}
       <button className="fixed-btn" onClick={onScrollToTop}>
-        🔝トップに戻る
+        🔝トップに戻る🔝
       </button>
+      {lastWinner && (
+        <div
+          style={{
+            background: "red",
+            padding: "10px",
+            borderRadius: "10px",
+            marginBottom: "15px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {lastWinner.img && (
+              <div style={{ position: "relative", marginRight: "1rem" }}>
+                <Image
+                  src={`/${lastWinner.img}`} // 画像のパス
+                  alt={lastWinner.img} // 画像の代替テキスト
+                  width={50} // 幅（ピクセル指定）
+                  height={50} // 高さ（ピクセル指定）
+                  style={{ borderRadius: "50%" }}
+                />
+              </div>
+            )}
+
+            <p
+              style={{
+                color: "white",
+                fontWeight: "bold",
+                marginRight: "2rem",
+              }}
+            >
+              最新の勝者: {lastWinner.content}👑
+            </p>
+            <Link href="/winner-log" className={classes.anchor}>
+              統計を見る
+            </Link>
+          </div>
+          <small style={{ color: "white" }}>
+            {new Date(lastWinner.created_at).toLocaleString()}
+          </small>
+        </div>
+      )}
       <h1 style={{ marginBottom: "20px" }}>トリコさん・小松ゲーム</h1>
 
       <div>

@@ -1,12 +1,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --underline: #acacac;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --underline: #cecece;
   }
 }
 
@@ -53,7 +55,7 @@ a {
   right: 15px;
   width: 10px;
   height: 7px;
-  background-color: #535353;
+  background-color: var(--underline);
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   content: "";
   pointer-events: none;
@@ -65,9 +67,9 @@ a {
   height: 2.8em;
   padding: 0.4em calc(0.8em + 30px) 0.4em 0.8em;
   border: none;
-  border-bottom: 2px solid #d0d0d0;
-  background-color: #fff;
-  color: #333333;
+  border-bottom: 2px solid var(--underline);
+  background: var(--background);
+  color: var(--foreground);
   font-size: 1em;
   cursor: pointer;
 }
@@ -119,4 +121,21 @@ button {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.design01 {
+  width: 100%;
+  text-align: center;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 15px;
+}
+.design01 th {
+  padding: 10px;
+  background: #e9faf9;
+  border: solid 1px #778ca3;
+}
+.design01 td {
+  padding: 10px;
+  border: solid 1px #778ca3;
 }
