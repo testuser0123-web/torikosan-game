@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
     request.headers.get("x-forwarded-for") ||
     request.headers.get("remote-addr") ||
     "IP not available";
-
-  return NextResponse.json({ ip: ipAddress });
+  const userAgent =
+    request.headers.get("user-agent") || "User-Agent not available";
+  return NextResponse.json({ ip: ipAddress, ua: userAgent });
 }

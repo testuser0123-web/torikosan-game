@@ -3,12 +3,14 @@
 
 import PostItem from "@/components/PostItem";
 import { useState, useEffect, useRef } from "react";
+import crypto from "crypto";
 
 export interface Post {
   id: string;
   content: string;
   created_at: string;
   img: string | null;
+  user_id: string | null;
 }
 
 const call = ["トリコさん！", "小松ゥ！", "マツ！", "小松くん！", "小僧ォ！"];
@@ -20,6 +22,7 @@ export default function Home() {
   const [selectedCall, setSelectedCall] = useState(call[0]);
   const [offset, setOffset] = useState<number>(-1);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const [userId, setUserID] = useState("");
   const observer = useRef<IntersectionObserver | null>(null);
 
   const toggleAccordion = () => {
@@ -45,21 +48,23 @@ export default function Home() {
     }
   };
 
+  // offsetが更新されたら投稿を取得する
   useEffect(() => {
     observer.current?.disconnect();
     fetchPosts(offset);
   }, [offset]);
 
-  const [ipAddress, setIpAddress] = useState("");
-
+  // user idを設定する
   useEffect(() => {
-    const fetchIp = async () => {
-      const res = await fetch("/api/get-ip");
+    const setID = async () => {
+      const res = await fetch("/api/get-user-info");
       const data = await res.json();
-      setIpAddress(data.ip);
+      const rawData = `${data.ip}-${data.ua}`;
+      const hash = crypto.createHash("sha256").update(rawData).digest("hex");
+      setUserID(hash.substring(0, 16));
     };
 
-    fetchIp();
+    setID();
   }, []);
 
   // インフィニティスクロール用のIntersection Observer
@@ -87,7 +92,7 @@ export default function Home() {
       await fetch("/api/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: selectedCall }),
+        body: JSON.stringify({ content: selectedCall, userId }),
       });
       loadNewPosts();
     } catch (error) {
@@ -120,10 +125,6 @@ export default function Home() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <div>
-        <h3>ユーザーのIPアドレス</h3>
-        <p>{ipAddress}</p>
-      </div>
       <h1 style={{ marginBottom: "20px" }}>トリコさん・小松ゲーム</h1>
 
       <div>
@@ -186,6 +187,7 @@ export default function Home() {
         </button>
         {posts.map((post, index) => (
           <PostItem
+            userId={userId}
             key={post.id}
             post={post}
             ref={posts.length === index + 1 ? lastPostRef : null}

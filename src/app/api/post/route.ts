@@ -4,6 +4,7 @@ import { getClient } from "../../../lib/db";
 
 interface PostRequestBody {
   content: string;
+  userId: string;
 }
 
 const call = ["トリコさん！", "小松ゥ！", "マツ！", "小松くん！", "小僧ォ！"];
@@ -23,7 +24,7 @@ const name: { [K: string]: string } = {
 };
 
 export async function POST(req: NextRequest) {
-  const { content }: PostRequestBody = await req.json();
+  const { content, userId }: PostRequestBody = await req.json();
   const timestamp = new Date().toISOString();
   const client = getClient();
 
@@ -34,8 +35,8 @@ export async function POST(req: NextRequest) {
   try {
     await client.connect();
     await client.query(
-      "INSERT INTO posts (content, created_at, img) VALUES ($1, $2, $3)",
-      [content, timestamp, img_path[content]]
+      "INSERT INTO posts (content, created_at, img, user_id) VALUES ($1, $2, $3, $4)",
+      [content, timestamp, img_path[content], userId]
     );
     const result = await client.query(
       "SELECT * FROM posts ORDER BY id DESC LIMIT 5"
