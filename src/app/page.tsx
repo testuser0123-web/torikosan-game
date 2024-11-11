@@ -36,6 +36,7 @@ export default function Home() {
   const [autoReload, setAutoReload] = useState(true);
   const [serverError, setServerError] = useState(false);
   const [lastWinner, setLastWinner] = useState<Winner | null>(null);
+  const [isPosting, setIsPosting] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
 
   const toggleAccordion = () => {
@@ -175,6 +176,7 @@ export default function Home() {
   // 投稿の追加処理
   const handlePost = async (e: React.FormEvent) => {
     setIsLoading(true);
+    setIsPosting(true);
     e.preventDefault();
     if (!selectedCall) return;
 
@@ -197,6 +199,7 @@ export default function Home() {
       console.error("Failed to post message:", error);
     } finally {
       setIsLoading(false);
+      setIsPosting(false);
     }
   };
 
@@ -314,7 +317,9 @@ export default function Home() {
             ))}
           </select>
         </div>
-        <button type="submit">🍖投稿🍖</button>
+        <button type="submit" disabled={isPosting}>
+          🍖投稿🍖
+        </button>
       </form>
 
       <div style={{ marginTop: "15px" }}>
