@@ -33,7 +33,7 @@ export default function Home() {
   const [offset, setOffset] = useState<number>(-1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [userId, setUserID] = useState("");
-  const [autoReload, setAutoReload] = useState(false);
+  const [autoReload, setAutoReload] = useState(true);
   const [serverError, setServerError] = useState(false);
   const [lastWinner, setLastWinner] = useState<Winner | null>(null);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -152,7 +152,7 @@ export default function Home() {
       const interval = setInterval(() => {
         loadNewPosts();
         getLastWinner();
-      }, 10000);
+      }, 1000);
       return () => clearInterval(interval);
     }
   }, [autoReload, loadNewPosts]);
@@ -185,7 +185,7 @@ export default function Home() {
         body: JSON.stringify({ content: selectedCall, userId }),
       });
       if (response.status === 429) {
-        alert("5秒以内の連投はできません");
+        alert("1秒以内の連投はできません");
       } else if (response.status === 500) {
         setServerError(true);
       } else if (response.status === 200) {
@@ -314,13 +314,11 @@ export default function Home() {
             ))}
           </select>
         </div>
-        <button type="submit" disabled={isLoading}>
-          🍖投稿🍖
-        </button>
+        <button type="submit">🍖投稿🍖</button>
       </form>
 
       <div style={{ marginTop: "15px" }}>
-        <button onClick={changeAutoReload} disabled={isLoading}>
+        <button onClick={changeAutoReload}>
           🔃自動更新を{autoReload ? "オフ" : "オン"}にする🔃
         </button>
         <button onClick={handleClick} disabled={isLoading}>
