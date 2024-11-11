@@ -50,6 +50,18 @@ export default function Home() {
     fetchPosts(offset);
   }, [offset]);
 
+  const [ipAddress, setIpAddress] = useState("");
+
+  useEffect(() => {
+    const fetchIp = async () => {
+      const res = await fetch("/api/get-ip");
+      const data = await res.json();
+      setIpAddress(data.ip);
+    };
+
+    fetchIp();
+  }, []);
+
   // インフィニティスクロール用のIntersection Observer
   const lastPostRef = (node: HTMLDivElement) => {
     // 重複監視を防ぐ
@@ -108,6 +120,10 @@ export default function Home() {
 
   return (
     <div style={{ padding: "20px" }}>
+      <div>
+        <h3>ユーザーのIPアドレス</h3>
+        <p>{ipAddress}</p>
+      </div>
       <h1 style={{ marginBottom: "20px" }}>トリコさん・小松ゲーム</h1>
 
       <div>
@@ -121,7 +137,7 @@ export default function Home() {
               まず、誰かが『トリコさん！』ってレスをする <br />{" "}
               こいつはつまり小松役 <br /> <br />{" "}
               そのレスの後に『小松ゥ！』『マツ！』『小松くん！』『小僧ォ！』のいずれかのレスをする{" "}
-              <br /> これはつまり、トリコ、サニー、ココ、ゼブラの役ってわけ{" "}
+              <br /> これはつまり、トリコ、サニー、ココ、ゼブラの役ってわけや{" "}
               <br /> <br />{" "}
               『トリコさん！』の後に特定の四天王の小松呼びレスが3レス連続で続いたら、その四天王の勝ち{" "}
               <br /> <br /> 例 <br /> &gt;&gt; 3トリコさん！　&gt;&gt; 4マツ！
@@ -129,11 +145,11 @@ export default function Home() {
               <br /> <br /> &gt;&gt; 3トリコさん！　&gt;&gt; 4マツ！ &gt;&gt;
               5小松ゥ！ &gt;&gt; 6マツ！ &gt;&gt; 7マツ！ <br /> ↑この場合は無効{" "}
               <br /> <br /> <br /> ただし、四天王の中でトリコだけは例外 <br />{" "}
-              トリコは元々有利やから、勝利条件を3レスではなく5レスにする、元々小松はトリコを呼んでいるわけだしな{" "}
+              トリコは元々有利やから、勝利条件を3レスではなく5レスにする、元々小松はトリコを呼んでいるわけやだしな{" "}
               <br />{" "}
-              これはトリコ以外の四天王に対する正当なハンディキャップというわけ{" "}
+              これはトリコ以外の四天王に対する正当なハンディキャップというわけや{" "}
               <br /> <br /> 小松は勝った四天王のコンビになる <br />{" "}
-              つまりこれは好きな四天王を勝たせる熱いゲームってわけ
+              つまりこれは好きな四天王を勝たせる熱いゲームってわけや
             </p>
           </div>
         )}
