@@ -323,10 +323,10 @@ export default function Home() {
 
       <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
         <button onClick={changeAutoReload}>
-          🔃自動更新を{autoReload ? "オフ" : "オン"}にする🔃
+          🔀自動更新を{autoReload ? "オフ" : "オン"}🔀
         </button>
         <button onClick={handleClick} disabled={isLoading}>
-          🔃更新🔃
+          🔄更新🔄
         </button>
       </div>
       {posts.map((post, index) => (
