@@ -64,7 +64,6 @@ export default function Home() {
           }
         });
         setPosts(newPosts);
-        // setPosts((prev) => [...prev, ...data]);
       } else {
         setHasMore(false);
       }
@@ -299,10 +298,10 @@ export default function Home() {
 
       <form onSubmit={handlePost}>
         <div className="selectbox-5">
-          <h3>
+          <h4>
             何と呼ぶか選べ！
             <br />
-          </h3>
+          </h4>
           <select
             id="callSelect"
             value={selectedCall}
@@ -322,22 +321,22 @@ export default function Home() {
         </button>
       </form>
 
-      <div style={{ marginTop: "15px" }}>
+      <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
         <button onClick={changeAutoReload}>
           🔃自動更新を{autoReload ? "オフ" : "オン"}にする🔃
         </button>
         <button onClick={handleClick} disabled={isLoading}>
           🔃更新🔃
         </button>
-        {posts.map((post, index) => (
-          <PostItem
-            userId={userId}
-            key={post.id}
-            post={post}
-            ref={posts.length === index + 1 ? lastPostRef : null}
-          />
-        ))}
       </div>
+      {posts.map((post, index) => (
+        <PostItem
+          userId={userId}
+          key={post.id}
+          post={post}
+          ref={posts.length === index + 1 ? lastPostRef : null}
+        />
+      ))}
 
       {!hasMore && (
         <p style={{ textAlign: "center" }}>すべての投稿が読み込まれました。</p>
