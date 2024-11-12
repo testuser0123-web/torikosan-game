@@ -6,6 +6,7 @@ import { QueryResult } from "@vercel/postgres";
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const id = parseInt(url.searchParams.get("id") || "0", 10);
+  const limit = parseInt(url.searchParams.get("limit") || "30", 10);
   const client = getClient();
 
   try {
@@ -17,8 +18,8 @@ export async function GET(req: NextRequest) {
       );
     } else {
       result = await client.query(
-        "SELECT * FROM posts WHERE id > $1 ORDER BY id DESC",
-        [id]
+        "SELECT * FROM posts WHERE id > $1 ORDER BY id DESC LIMIT $2",
+        [id, limit]
       );
     }
     return NextResponse.json(result.rows);
