@@ -7,6 +7,7 @@ import crypto from "crypto";
 import Image from "next/image";
 import Link from "next/link";
 import classes from "./style.module.css";
+import AudioPlayer from "@/components/AudioPlayer";
 
 export interface Post {
   id: string;
@@ -37,6 +38,7 @@ export default function Home() {
   const [serverError, setServerError] = useState(false);
   const [lastWinner, setLastWinner] = useState<Winner | null>(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [callQueue, setCallQueue] = useState<string[]>([]);
   const observer = useRef<IntersectionObserver | null>(null);
 
   const toggleAccordion = () => {
@@ -118,33 +120,46 @@ export default function Home() {
     getLastWinner();
   }, []);
 
-  const loadNewPosts = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const id = posts[0]?.id || 0;
-      const response = await fetch(`/api/getNewPosts?id=${id}`);
-      if (!response.ok) {
-        setServerError(true);
-      } else {
-        setServerError(false);
-      }
-      const data: Post[] = await response.json();
+  const loadNewPosts = useCallback(
+    async (reset = false) => {
+      setIsLoading(true);
+      try {
+        const id = posts[0]?.id || 0;
+        const response = await fetch(`/api/getNewPosts?id=${id}`);
+        if (!response.ok) {
+          setServerError(true);
+        } else {
+          setServerError(false);
+        }
+        const data: Post[] = await response.json();
 
-      if (data.length > 0) {
-        const newPosts = [...posts];
-        data.reverse().forEach((post) => {
-          if (post.id > (posts[0]?.id || 0)) {
-            newPosts.unshift(post);
+        // Audio用
+        if (Array.isArray(data)) {
+          const calls = data.map((post) => post.content);
+          if (reset) {
+            setCallQueue(calls);
+          } else {
+            setCallQueue((prev) => [...calls, ...prev]);
           }
-        });
-        setPosts(newPosts);
+        }
+
+        if (data.length > 0) {
+          const newPosts = [...posts];
+          data.reverse().forEach((post) => {
+            if (post.id > (posts[0]?.id || 0)) {
+              newPosts.unshift(post);
+            }
+          });
+          setPosts(newPosts);
+        }
+      } catch (error) {
+        console.error("Failed to load posts:", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to load posts:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [posts]);
+    },
+    [posts]
+  );
 
   // 自動更新
   useEffect(() => {
@@ -204,7 +219,7 @@ export default function Home() {
 
   // 更新ボタンを押したときの処理
   const handleClick = () => {
-    loadNewPosts();
+    loadNewPosts(true);
     getLastWinner();
   };
 
@@ -322,12 +337,17 @@ export default function Home() {
       </form>
 
       <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
-        <button onClick={changeAutoReload}>
+        <button onClick={changeAutoReload} style={{ flex: "5" }}>
           🔀自動更新を{autoReload ? "オフ" : "オン"}🔀
         </button>
-        <button onClick={handleClick} disabled={isLoading}>
+        <button
+          onClick={handleClick}
+          disabled={isLoading}
+          style={{ flex: "4" }}
+        >
           🔄更新🔄
         </button>
+        <AudioPlayer queue={callQueue} setQueue={setCallQueue} />
       </div>
       {posts.map((post, index) => (
         <PostItem
