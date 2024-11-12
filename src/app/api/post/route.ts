@@ -22,7 +22,7 @@ const name: { [K: string]: string } = {
   "小松くん！": "ココ",
   "小僧ォ！": "ゼブラ",
 };
-const NG_IP = ["133.106.34.164"];
+const NG_IP = ["133.106.34.164", "133.106.47.192"];
 
 export async function POST(req: NextRequest) {
   const ipAddress =
@@ -39,12 +39,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // 最後の投稿を取得
     await client.connect();
     // NG処理
     if (NG_IP.includes(ipAddress)) {
       return NextResponse.json({ error: "ホスト規制中" }, { status: 500 });
     }
+    // 最後の投稿を取得
     const lastPostResult = await client.query(
       "SELECT created_at FROM posts WHERE ip_address = $1 AND user_agent = $2 ORDER BY created_at DESC LIMIT 1",
       [ipAddress, userAgent]
