@@ -1,6 +1,7 @@
 // app/api/post/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getClient } from "../../../lib/db";
+import dns from "dns";
 
 interface PostRequestBody {
   content: string;
@@ -24,15 +25,57 @@ const name: { [K: string]: string } = {
 };
 const NG_IP = ["133.106.34.164", "133.106.47.192"];
 
+/**
+ * IPアドレスが逆引きできるかどうかを確認する関数
+ * @param ipAddress - チェックするIPアドレス
+ * @returns 逆引きが可能ならtrue、不可能ならfalse
+ */
+async function isResolvableHost(ipAddress: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    dns.reverse(ipAddress, (err, hostnames) => {
+      if (err || hostnames.length === 0) {
+        // 逆引き失敗（逆引きできない）
+        resolve(false);
+        return;
+      }
+
+      // 正引きが元のIPと一致するか確認
+      const hostname = hostnames[0];
+      dns.lookup(hostname, (err, address) => {
+        if (err || address !== ipAddress) {
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  });
+}
+
 export async function POST(req: NextRequest) {
   const ipAddress =
     req.headers.get("x-forwarded-for") ||
     req.headers.get("remote-addr") ||
-    "IP not available";
+    null;
   const userAgent = req.headers.get("user-agent") || "User-Agent not available";
   const { content, userId }: PostRequestBody = await req.json();
   const timestamp = new Date().toISOString();
   const client = getClient();
+
+  if (ipAddress && typeof ipAddress === "string") {
+    const isResolvable = await isResolvableHost(ipAddress);
+    if (!isResolvable) {
+      return NextResponse.json(
+        { error: "アクセスが制限されています" },
+        { status: 403 }
+      );
+    }
+  } else if (ipAddress === null) {
+    return NextResponse.json(
+      { error: "アクセスが制限されています" },
+      { status: 403 }
+    );
+  }
 
   if (!call.some((keyword) => keyword === content)) {
     return NextResponse.json({ error: "Invalid string" }, { status: 500 });
