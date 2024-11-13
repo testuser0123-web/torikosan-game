@@ -93,7 +93,6 @@ export async function POST(req: NextRequest) {
       "SELECT created_at FROM posts WHERE ip_address = $1 AND user_agent = $2 AND created_at >= NOW() - INTERVAL '10 seconds' ORDER BY created_at DESC LIMIT 10",
       [ipAddress, userAgent]
     );
-    console.log(lastPostResult.rows);
     const lastPostTime = lastPostResult.rows[0]?.created_at;
     const currentTime = new Date();
     if (
