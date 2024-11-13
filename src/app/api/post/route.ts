@@ -87,11 +87,11 @@ export async function POST(req: NextRequest) {
     if (NG_IP.includes(ipAddress)) {
       return NextResponse.json({ error: "ホスト規制中" }, { status: 500 });
     }
-    // 最後の投稿を取得
+    // 最後の投稿が1秒以内または、
     // 10秒以内に10個以上投稿してたら制限
     const lastPostResult = await client.query(
-      "SELECT created_at FROM posts WHERE ip_address = $1 AND user_agent = $2 AND created_at >= NOW() - INTERVAL '10 seconds' ORDER BY created_at DESC LIMIT 10",
-      [ipAddress, userAgent]
+      "SELECT created_at FROM posts WHERE ip_address = $1 AND created_at >= NOW() - INTERVAL '10 seconds' ORDER BY created_at DESC LIMIT 10",
+      [ipAddress]
     );
     const lastPostTime = lastPostResult.rows[0]?.created_at;
     const currentTime = new Date();
