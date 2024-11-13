@@ -88,10 +88,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "ホスト規制中" }, { status: 500 });
     }
     // 最後の投稿を取得
+    // 10秒以内に10個以上投稿してたら制限
     const lastPostResult = await client.query(
-      "SELECT created_at FROM posts WHERE ip_address = $1 AND user_agent = $2 ORDER BY created_at DESC LIMIT 1",
+      "SELECT created_at FROM posts WHERE ip_address = $1 AND user_agent = $2 AND created_at >= NOW() - INTERVAL '10 seconds' ORDER BY created_at DESC LIMIT 10",
       [ipAddress, userAgent]
     );
+    console.log(lastPostResult.rows);
     const lastPostTime = lastPostResult.rows[0]?.created_at;
     const currentTime = new Date();
     if (
@@ -102,6 +104,8 @@ export async function POST(req: NextRequest) {
         { error: "1秒以内の連続投稿はできません。" },
         { status: 429 }
       );
+    } else if (lastPostResult.rows.length >= 10) {
+      return NextResponse.json({ error: "投稿しすぎです。" }, { status: 429 });
     }
 
     await client.query(
