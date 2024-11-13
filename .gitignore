@@ -40,3 +40,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# Memo
+db_scheme.txt
