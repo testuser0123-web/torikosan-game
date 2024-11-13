@@ -26,6 +26,8 @@ export interface Winner {
 
 const call = ["トリコさん！", "小松ゥ！", "マツ！", "小松くん！", "小僧ォ！"];
 
+const MAX_POST = 500;
+
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -150,7 +152,8 @@ export default function Home() {
               newPosts.unshift(post);
             }
           });
-          setPosts(newPosts);
+          // 最新のMAX_POST件だけ表示
+          setPosts(newPosts.slice(0, MAX_POST));
         }
       } catch (error) {
         console.error("Failed to load posts:", error);
@@ -354,7 +357,11 @@ export default function Home() {
           userId={userId}
           key={post.id}
           post={post}
-          ref={posts.length === index + 1 ? lastPostRef : null}
+          ref={
+            posts.length <= MAX_POST && posts.length === index + 1
+              ? lastPostRef
+              : null
+          }
         />
       ))}
 

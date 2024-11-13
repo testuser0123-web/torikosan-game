@@ -1,0 +1,24 @@
+winners
+id content created_at img
+
+CREATE TABLE winners (
+  id SERIAL PRIMARY KEY,
+  content VARCHAR(63) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  img VARCHAR(63)
+);
+
+posts
+id content created_at img user_id ip_address user_agent
+
+CREATE TABLE posts (
+  id SERIAL PRIMARY KEY,
+  content VARCHAR(63) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  img VARCHAR(63),
+  user_id VARCHAR(20),
+  ip_address VARCHAR(255),
+  user_agent VARCHAR(255)
+);
+
+・components/AudioPlayer で new Audio()を呼び出しまくってたのが悪かった
