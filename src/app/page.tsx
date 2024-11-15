@@ -340,13 +340,13 @@ export default function Home() {
       </form>
 
       <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
-        <button onClick={changeAutoReload} style={{ flex: "5" }}>
-          🔀自動更新を{autoReload ? "オフ" : "オン"}🔀
+        <button onClick={changeAutoReload} style={{ flex: "4" }}>
+          自動更新を{autoReload ? "オフ" : "オン"}
         </button>
         <button
           onClick={handleClick}
           disabled={isLoading}
-          style={{ flex: "4" }}
+          style={{ flex: "3" }}
         >
           🔄更新🔄
         </button>
