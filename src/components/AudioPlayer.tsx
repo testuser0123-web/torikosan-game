@@ -10,6 +10,14 @@ const filemap: { [K: string]: string } = {
   "小僧ォ！": "/audio/kozo.mp3",
 };
 
+const kikai_filemap: { [K: string]: string } = {
+  "トリコさん！": "/audio/torikosan_kikai.mp3",
+  "小松ゥ！": "/audio/komatuu_kikai.mp3",
+  "マツ！": "/audio/matsu.mp3",
+  "小松くん！": "/audio/komatsukun_kikai.mp3",
+  "小僧ォ！": "/audio/kozo.mp3",
+};
+
 type AudioProps = {
   queue: string[];
   setQueue: Dispatch<SetStateAction<string[]>>;
@@ -17,13 +25,16 @@ type AudioProps = {
 
 export default function AudioPlayer({ queue, setQueue }: AudioProps) {
   const [isMute, setIsMute] = useState(true);
+  const [isKikai, setIsKikai] = useState(false);
 
   useEffect(() => {
     const play = async () => {
       if (queue.length > 0) {
         const call = queue.pop();
-        if (call && call in filemap) {
+        if (!isKikai && call && call in filemap) {
           await playAudio(filemap[call]);
+        } else if (isKikai && call && call in kikai_filemap) {
+          await playAudio(kikai_filemap[call]);
         }
         setQueue([...queue]);
       }
@@ -48,8 +59,13 @@ export default function AudioPlayer({ queue, setQueue }: AudioProps) {
   };
 
   return (
-    <button style={{ flex: 1 }} onClick={handleClick}>
-      {isMute ? "🔇" : "🔊"}
-    </button>
+    <>
+      <button style={{ flex: 1 }} onClick={handleClick}>
+        {isMute ? "🔇" : "🔊"}
+      </button>
+      <button style={{ flex: 1 }} onClick={() => setIsKikai((prev) => !prev)}>
+        {isKikai ? "🤖" : "👦"}
+      </button>
+    </>
   );
 }
