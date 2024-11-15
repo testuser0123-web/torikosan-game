@@ -6,7 +6,7 @@ const filemap: { [K: string]: string } = {
   "トリコさん！": "/audio/torikosan.wav",
   "小松ゥ！": "/audio/komatuu.wav",
   "マツ！": "/audio/matsu.mp3",
-  "小松くん！": "/audio/komatsukun.mp3",
+  "小松くん！": "/audio/komatsukun.wav",
   "小僧ォ！": "/audio/kozo.mp3",
 };
 
