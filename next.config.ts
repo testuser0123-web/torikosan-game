@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=31536000, immutable", // 365日キャッシュ
+            value: "public, max-age=0, must-revalidate", // 365日キャッシュ
           },
         ],
       },
