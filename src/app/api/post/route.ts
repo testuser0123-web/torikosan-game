@@ -23,7 +23,7 @@ const name: { [K: string]: string } = {
   "小松くん！": "ココ",
   "小僧ォ！": "ゼブラ",
 };
-const NG_IP = ["133.106.34.164", "133.106.47.192"];
+const NG_IP: string[] = [];
 
 /**
  * IPアドレスが逆引きできるかどうかを確認する関数
@@ -90,8 +90,8 @@ export async function POST(req: NextRequest) {
     // 最後の投稿を取得
     // 10秒以内に10個以上投稿してたら制限
     const lastPostResult = await client.query(
-      "SELECT created_at FROM posts WHERE ip_address = $1 AND user_agent = $2 AND created_at >= NOW() - INTERVAL '10 seconds' ORDER BY created_at DESC LIMIT 10",
-      [ipAddress, userAgent]
+      "SELECT created_at FROM posts WHERE ip_address = $1 AND created_at >= NOW() - INTERVAL '10 seconds' ORDER BY created_at DESC LIMIT 10",
+      [ipAddress]
     );
     const lastPostTime = lastPostResult.rows[0]?.created_at;
     const currentTime = new Date();
