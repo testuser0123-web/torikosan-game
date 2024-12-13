@@ -21,4 +21,3 @@ CREATE TABLE posts (
   user_agent VARCHAR(255)
 );
 
-・components/AudioPlayer で new Audio()を呼び出しまくってたのが悪かった
